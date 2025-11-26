@@ -14,12 +14,12 @@ def play_audio(file_path):
     pygame.mixer.music.load(file_path)
     pygame.mixer.music.play()
 
-    # Wait until audio finishes
+    # wait until audio finishes
     while pygame.mixer.music.get_busy():
         pygame.time.Clock().tick(10)
 
 def speak_google_tts(text):
-    # Build request
+    # build request
     synthesis_input = texttospeech.SynthesisInput(text=text)
     voice = texttospeech.VoiceSelectionParams(
         language_code="en-US",
@@ -29,7 +29,7 @@ def speak_google_tts(text):
         audio_encoding=texttospeech.AudioEncoding.MP3
     )
 
-    # Generate filename
+    # generate filename
     filename = f"tts_{uuid.uuid4().hex}.mp3"
 
     # Send TTS request
