@@ -1,12 +1,73 @@
 # keykoe: An AI Companion by Andres Sanchez-Gonzalez 10.26.2025
+import os
+import uuid
+import pygame
+from google.cloud import texttospeech
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "keykoething.json"
+client = texttospeech.TextToSpeechClient()
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
 from RealtimeSTT import AudioToTextRecorder
-from indextts.infer_v2 import IndexTTS2
-tts = IndexTTS2(cfg_path="checkpoints/config.yaml", model_dir="checkpoints", use_fp16=False, use_cuda_kernel=False, use_deepspeed=False)
+pygame.mixer.init()
+
+def play_audio(file_path):
+    pygame.mixer.music.load(file_path)
+    pygame.mixer.music.play()
+
+    # Wait until audio finishes
+    while pygame.mixer.music.get_busy():
+        pygame.time.Clock().tick(10)
+
+def speak_google_tts(text):
+    # Build request
+    synthesis_input = texttospeech.SynthesisInput(text=text)
+    voice = texttospeech.VoiceSelectionParams(
+        language_code="en-US",
+        name="en-US-Neural2-F"
+    )
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.MP3
+    )
+
+    # Generate filename
+    filename = f"tts_{uuid.uuid4().hex}.mp3"
+
+    # Send TTS request
+    response = client.synthesize_speech(
+        input=synthesis_input,
+        voice=voice,
+        audio_config=audio_config
+    )
+
+    # Save file
+    with open(filename, "wb") as out:
+        out.write(response.audio_content)
+
+    # Play audio
+    try:
+        pygame.mixer.music.load(filename)
+        pygame.mixer.music.play()
+
+        # WAIT until playback finishes
+        while pygame.mixer.music.get_busy():
+            pygame.time.wait(100)
+
+        # Unload file from mixer
+        pygame.mixer.music.unload()
+
+    except Exception as e:
+        print("Audio playback error:", e)
+
+    # Now safe to delete
+    try:
+        os.remove(filename)
+    except Exception as e:
+        print("File delete error:", e)
 
 
 
+
+#SET UP/CONTEXT
 template = """ 
 You are Keykoe, a helpful and friendly AI companion with a warm and engaging personality similar to that of an anime girl and Paimon from Genshin Impact whose main goal is to help NEETs or Hikikomoris come out of their shells and engage with the world around them. 
 You are empathetic, patient, and always ready to listen. You provide encouragement, advice, and companionship to help users feel more connected and motivated.
@@ -27,6 +88,7 @@ model = OllamaLLM(model="llama3")
 prompt = ChatPromptTemplate.from_template(template)
 chain = prompt | model
 
+#main loop
 def handle_conversation():
     context = ""
     print("Hi! My name is Keykoe, your AI companion. How can I help you today?")
@@ -38,20 +100,21 @@ def handle_conversation():
         print(f"You (from mic): {user_input}")
 
         # EXIT condition
-        if user_input.lower() in ["exit", "Exit", "Goodbye", "goodbye", "quit", "Quit"]:
+        if user_input.lower() in ["exit", "goodbye", "quit"]:
             goodbye_prompt = "Say a cute goodbye message and end the conversation warmly."
-            result = chain.invoke({"Context": context, "Question": goodbye_prompt}).content
-            print(f"Keykoe: {result.strip()}")
-            text = result.content if 'result' in locals() else "Hello, I'm Keykoe, your AI companion! How can I assist you today?"
-            tts.speak(text)
+            result = chain.invoke({"Context": context, "Question": goodbye_prompt})
+            keykoe_text = result.strip()
+
+            print(f"Keykoe: {keykoe_text}")
+            speak_google_tts(keykoe_text)
             break
 
         # Keykoe’s response
         result = chain.invoke({"Context": context, "Question": user_input})
-        print(f"Keykoe: {result.strip()}")
-        text = result.content if 'result' in locals() else "Hello, I'm Keykoe, your AI companion! How can I assist you today?"
-        tts.speak(text)
+        keykoe_text = result.strip()
 
+        print(f"Keykoe: {keykoe_text}")
+        speak_google_tts(keykoe_text)
         # Update memory (keep last 10 exchanges)
         context += f"\nHuman: {user_input}\nKeykoe: {result}"
         context = "\n".join(context.splitlines()[-20:])
