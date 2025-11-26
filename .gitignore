@@ -7,7 +7,7 @@ Scripts/
 Lib/
 Include/
 pyvenv.cfg
-
+keykoething.json
 # Ignore other common Python artifacts
 __pycache__/
 *.py[cod]
