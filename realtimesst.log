@@ -401,3 +401,10 @@
 2025-11-25 19:56:24.122 - RealTimeSTT: realtimestt - DEBUG - Finishing realtime thread
 2025-11-25 19:56:24.122 - RealTimeSTT: realtimestt - DEBUG - Finishing realtime thread
 2025-11-25 19:56:24.122 - RealTimeSTT: realtimestt - DEBUG - Finishing realtime thread
+2025-11-25 20:07:34.087 - RealTimeSTT: realtimestt - INFO - Starting RealTimeSTT
+2025-11-25 20:07:34.112 - RealTimeSTT: realtimestt - INFO - Initializing audio recording (creating pyAudio input stream, sample rate: 16000 buffer size: 512
+2025-11-25 20:07:34.128 - RealTimeSTT: realtimestt - INFO - Initializing WebRTC voice with Sensitivity 3
+2025-11-25 20:07:34.128 - RealTimeSTT: realtimestt - DEBUG - WebRTC VAD voice activity detection engine initialized successfully
+2025-11-25 20:07:34.525 - RealTimeSTT: realtimestt - DEBUG - Silero VAD voice activity detection engine initialized successfully
+2025-11-25 20:07:34.526 - RealTimeSTT: realtimestt - DEBUG - Starting realtime worker
+2025-11-25 20:07:34.526 - RealTimeSTT: realtimestt - DEBUG - Waiting for main transcription model to start
